@@ -4,7 +4,7 @@ from fastapi.background import BackgroundTasks
 from fastapi.middleware.cors import CORSMiddleware 
 from redis_om import get_redis_connection, HashModel #redis om is a redis orm for python
 from starlette.requests import Request
-import requests, time 
+import requests,time
 
 
 
@@ -44,7 +44,9 @@ class Order(HashModel):
 
 @app.get('/get-orders/{pk}')
 def get(pk: str):
-    return Order.get(pk)
+    order = Order.get(pk)
+    redis.xadd("refund_order",order.dict(),"*")
+    return order
 
 
 @app.post('/post-orders')
@@ -75,7 +77,7 @@ def order_completed(order: Order):
     time.sleep(5) #the time to confirm our order 
     order.status = 'completed'
     order.save()
-    #sending an event to a redis stream, xadd adsds data to a stream  
+    #sending an event to a redis stream, xadd adds data to a stream  when the payment is made 
     redis.xadd('order_completed', order.dict(), '*') #  * respresents the id of the  order
 
 

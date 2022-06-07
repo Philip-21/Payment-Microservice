@@ -20,12 +20,13 @@ while True:
 
         if results != []:
             for result in results:
-                obj = result[1][0][1] #getting the values of the list in index format
+                obj = result[1][0][1] #getting the values of the list in index format i.e the product 
                 try:
-                    #decreasing the quantity when a consumer buys a product
                     product = Product.get(obj['product_id'])
+                     #decreasing the quantity of the products  from the inventory  when a consumer buys a product based on the payment order 
                     product.quantity = product.quantity - int(obj['quantity'])
                     product.save()
+                    #refunds the order  if the particular product doesnt exist 
                 except:
                     redis.xadd('refund_order', obj, '*')
 
